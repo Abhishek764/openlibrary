@@ -1084,7 +1084,13 @@ def _process_solr_search_response(response: SearchResponse, fields: str) -> dict
     """
     if response.raw_resp is None:
         # Solr returned an error; surface an empty-but-valid response
-        return {'numFound': 0, 'num_found': 0, 'start': 0, 'numFoundExact': True, 'docs': []}
+        return {
+            'numFound': 0,
+            'num_found': 0,
+            'start': 0,
+            'numFoundExact': True,
+            'docs': [],
+        }
     processed_response = response.raw_resp['response']
 
     if response.highlighting is not None:
