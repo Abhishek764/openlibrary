@@ -172,13 +172,11 @@ class TestAccountVerify:
     @mock.patch("openlibrary.plugins.upstream.account.InternetArchiveAccount")
     @mock.patch("openlibrary.plugins.upstream.account.account_login")
     @mock.patch("openlibrary.plugins.upstream.account.web")
-    def test_valid_token_calls_login_with_s3_keys(
-        self, mock_web, mock_login_cls, mock_ia_account
-    ):
+    def test_valid_token_calls_login_with_s3_keys(self, mock_web, mock_login_cls, mock_ia_account):
         mock_web.input.return_value = web.storage(t="validtoken")
         mock_ia_account.verify.return_value = {
-            'email': 'test@example.com',
-            's3': {'access': 'ACCESSKEY', 'secret': 'SECRETKEY'},
+            "email": "test@example.com",
+            "s3": {"access": "ACCESSKEY", "secret": "SECRETKEY"},
         }
         login_instance = mock.MagicMock()
         mock_login_cls.return_value = login_instance
@@ -187,19 +185,17 @@ class TestAccountVerify:
 
         mock_ia_account.verify.assert_called_once_with(token="validtoken")
         login_instance.login.assert_called_once_with(
-            access='ACCESSKEY',
-            secret='SECRETKEY',
+            access="ACCESSKEY",
+            secret="SECRETKEY",
         )
 
     @mock.patch("openlibrary.plugins.upstream.account.InternetArchiveAccount")
     @mock.patch("openlibrary.plugins.upstream.account.add_flash_message")
     @mock.patch("openlibrary.plugins.upstream.account._", lambda x, **kw: x)
     @mock.patch("openlibrary.plugins.upstream.account.web")
-    def test_invalid_token_redirects_to_create(
-        self, mock_web, mock_flash, mock_ia_account
-    ):
+    def test_invalid_token_redirects_to_create(self, mock_web, mock_flash, mock_ia_account):
         mock_web.input.return_value = web.storage(t="badtoken")
-        mock_ia_account.verify.return_value = {'error': 'invalid_token'}
+        mock_ia_account.verify.return_value = {"error": "invalid_token"}
         mock_web.seeother.side_effect = Exception("redirect")
 
         with pytest.raises(Exception, match="redirect"):
@@ -207,8 +203,8 @@ class TestAccountVerify:
 
         mock_flash.assert_called_once()
         flash_args = mock_flash.call_args[0]
-        assert flash_args[0] == 'error'
-        mock_web.seeother.assert_called_once_with('/account/create')
+        assert flash_args[0] == "error"
+        mock_web.seeother.assert_called_once_with("/account/create")
 
     @mock.patch("openlibrary.plugins.upstream.account.add_flash_message")
     @mock.patch("openlibrary.plugins.upstream.account.web")
@@ -220,7 +216,7 @@ class TestAccountVerify:
             self._make_handler().GET()
 
         mock_flash.assert_not_called()
-        mock_web.seeother.assert_called_once_with('/account/create')
+        mock_web.seeother.assert_called_once_with("/account/create")
 
 
 # --- account_login.login cookie helpers ---
@@ -233,9 +229,7 @@ class TestAccountLoginSetCookies:
     def test_truthy_value_uses_expires(self, mock_web):
         handler = account_login()
         handler.set_cookies(remember=True, session="abc123")
-        mock_web.setcookie.assert_called_once_with(
-            "session", "abc123", expires=3600 * 24 * 365
-        )
+        mock_web.setcookie.assert_called_once_with("session", "abc123", expires=3600 * 24 * 365)
 
     @mock.patch("openlibrary.plugins.upstream.account.web")
     def test_falsy_value_expires_cookie(self, mock_web):

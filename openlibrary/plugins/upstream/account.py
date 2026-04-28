@@ -46,7 +46,7 @@ from openlibrary.core.observations import Observations
 from openlibrary.core.ratings import Ratings
 from openlibrary.i18n import gettext as _
 from openlibrary.plugins import openlibrary as olib
-from openlibrary.plugins.openlibrary.pd import get_pd_options, get_pd_org
+from openlibrary.plugins.openlibrary.pd import get_pd_options
 from openlibrary.plugins.recaptcha import recaptcha
 from openlibrary.plugins.upstream import borrow, forms
 from openlibrary.plugins.upstream.mybooks import MyBooksTemplate
@@ -456,17 +456,19 @@ class account_login(delegate.page):
         return render.login(f)
 
     def POST(self):
-        self.login(**web.input(
-            username="",
-            connect=None,
-            password="",
-            remember=False,
-            redirect="/",
-            test=False,
-            access=None,
-            secret=None,
-            action="",
-        ))
+        self.login(
+            **web.input(
+                username="",
+                connect=None,
+                password="",
+                remember=False,
+                redirect="/",
+                test=False,
+                access=None,
+                secret=None,
+                action="",
+            )
+        )
 
     def set_cookies(self, remember=False, **kwargs):
         expires = 3600 * 24 * 365 if remember else ""
@@ -479,22 +481,22 @@ class account_login(delegate.page):
         connect=None,
         password="",
         remember=False,
-        redirect='/',
+        redirect="/",
         test=False,
         access=None,
         secret=None,
         action="",
     ):
-        email = '' if (access and secret) else username
+        email = "" if (access and secret) else username
         audit = audit_accounts(
             email,
             password,
             require_link=True,
-            s3_access_key=access or web.ctx.env.get('HTTP_X_S3_ACCESS'),
-            s3_secret_key=secret or web.ctx.env.get('HTTP_X_S3_SECRET'),
+            s3_access_key=access or web.ctx.env.get("HTTP_X_S3_ACCESS"),
+            s3_secret_key=secret or web.ctx.env.get("HTTP_X_S3_SECRET"),
             test=test,
         )
-        if error := audit.get('error'):
+        if error := audit.get("error"):
             return self.render_error(
                 error,
                 web.storage(
@@ -507,7 +509,7 @@ class account_login(delegate.page):
                     action=action,
                 ),
             )
-        email = email or audit.get('ia_email') or audit.get('ol_email')
+        email = email or audit.get("ia_email") or audit.get("ol_email")
 
         if ol_account := OpenLibraryAccount.get_by_email(email):
             ol_user = ol_account.get_user()
@@ -515,12 +517,12 @@ class account_login(delegate.page):
                 remember=remember,
                 **{
                     config.login_cookie_name: web.ctx.conn.get_auth_token(),
-                    'pd': int(audit.get('special_access') or 0),
-                    'sfw': 'yes' if ol_user.get_safe_mode() == 'yes' else '',
+                    "pd": int(audit.get("special_access") or 0),
+                    "sfw": "yes" if ol_user.get_safe_mode() == "yes" else "",
                 },
             )
-            if pref_key := ol_user.preferences().get('yrg_banner_pref'):
-                web.setcookie(pref_key, '1', expires=3600 * 24 * 365)
+            if pref_key := ol_user.preferences().get("yrg_banner_pref"):
+                web.setcookie(pref_key, "1", expires=3600 * 24 * 365)
 
             if web.cookies().get("pda"):
                 add_flash_message(
@@ -540,11 +542,11 @@ class account_login(delegate.page):
         ]
 
         if flash_message := self.perform_post_login_action(action, ol_account):
-            add_flash_message('note', _(flash_message))
+            add_flash_message("note", _(flash_message))
 
         if redirect == "" or any(path in redirect for path in blacklist):
             redirect = "/account/books"
-        stats.increment('ol.account.xauth.login')
+        stats.increment("ol.account.xauth.login")
         raise web.seeother(redirect)
 
 
@@ -612,17 +614,17 @@ class account_verify(delegate.page):
     def GET(self):
         i = web.input(t=None)
         if not i.t:
-            raise web.seeother('/account/create')
+            raise web.seeother("/account/create")
         r = InternetArchiveAccount.verify(token=i.t)
-        if 'error' in r:
+        if "error" in r:
             add_flash_message(
-                'error',
+                "error",
                 _("Verification failed. The link may be invalid or expired. Please try registering again."),
             )
-            raise web.seeother('/account/create')
+            raise web.seeother("/account/create")
         return account_login().login(
-            access=r['s3']['access'],
-            secret=r['s3']['secret'],
+            access=r["s3"]["access"],
+            secret=r["s3"]["secret"],
         )
 
 
