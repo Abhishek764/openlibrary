@@ -26,13 +26,15 @@ class TestDecorateWithTags:
         subject = web.storage(name="genre:thriller", subject_type="subject")
         mock_tag = self._make_mock_tag("Thriller", "genre")
 
-        with patch(
-            "openlibrary.plugins.worksearch.subjects.Tag.find",
-            return_value=[mock_tag.key],
-        ) as mock_find:
-            with patch("web.ctx") as mock_ctx:
-                mock_ctx.site.get_many.return_value = [mock_tag]
-                handler.decorate_with_tags(subject)
+        with (
+            patch(
+                "openlibrary.plugins.worksearch.subjects.Tag.find",
+                return_value=[mock_tag.key],
+            ) as mock_find,
+            patch("web.ctx") as mock_ctx,
+        ):
+            mock_ctx.site.get_many.return_value = [mock_tag]
+            handler.decorate_with_tags(subject)
 
         # Should search for "thriller" (slug only), not "genrethriller"
         mock_find.assert_called_once_with("thriller")
@@ -44,13 +46,15 @@ class TestDecorateWithTags:
         subject = web.storage(name="science fiction", subject_type="subject")
         mock_tag = self._make_mock_tag("Science Fiction", "subject")
 
-        with patch(
-            "openlibrary.plugins.worksearch.subjects.Tag.find",
-            return_value=[mock_tag.key],
-        ) as mock_find:
-            with patch("web.ctx") as mock_ctx:
-                mock_ctx.site.get_many.return_value = [mock_tag]
-                handler.decorate_with_tags(subject)
+        with (
+            patch(
+                "openlibrary.plugins.worksearch.subjects.Tag.find",
+                return_value=[mock_tag.key],
+            ) as mock_find,
+            patch("web.ctx") as mock_ctx,
+        ):
+            mock_ctx.site.get_many.return_value = [mock_tag]
+            handler.decorate_with_tags(subject)
 
         mock_find.assert_called_once_with("science_fiction")
         assert subject.tag == mock_tag
@@ -76,13 +80,15 @@ class TestDecorateWithTags:
         # Tag exists but is of type "subject", not "genre"
         mock_tag = self._make_mock_tag("Horror", "subject")
 
-        with patch(
-            "openlibrary.plugins.worksearch.subjects.Tag.find",
-            return_value=[mock_tag.key],
+        with (
+            patch(
+                "openlibrary.plugins.worksearch.subjects.Tag.find",
+                return_value=[mock_tag.key],
+            ),
+            patch("web.ctx") as mock_ctx,
         ):
-            with patch("web.ctx") as mock_ctx:
-                mock_ctx.site.get_many.return_value = [mock_tag]
-                handler.decorate_with_tags(subject)
+            mock_ctx.site.get_many.return_value = [mock_tag]
+            handler.decorate_with_tags(subject)
 
         assert not hasattr(subject, "tag")
         assert mock_tag in subject.disambiguations
@@ -93,13 +99,15 @@ class TestDecorateWithTags:
         subject = web.storage(name="content_format:graphic_novel", subject_type="subject")
         mock_tag = self._make_mock_tag("Graphic Novel", "content_format")
 
-        with patch(
-            "openlibrary.plugins.worksearch.subjects.Tag.find",
-            return_value=[mock_tag.key],
-        ) as mock_find:
-            with patch("web.ctx") as mock_ctx:
-                mock_ctx.site.get_many.return_value = [mock_tag]
-                handler.decorate_with_tags(subject)
+        with (
+            patch(
+                "openlibrary.plugins.worksearch.subjects.Tag.find",
+                return_value=[mock_tag.key],
+            ) as mock_find,
+            patch("web.ctx") as mock_ctx,
+        ):
+            mock_ctx.site.get_many.return_value = [mock_tag]
+            handler.decorate_with_tags(subject)
 
         mock_find.assert_called_once_with("graphic_novel")
         assert subject.tag == mock_tag

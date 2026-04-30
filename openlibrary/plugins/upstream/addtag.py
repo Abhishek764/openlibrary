@@ -29,6 +29,7 @@ SUBJECT_SUB_TYPES = [
     "place",
     "time",
     "genre",
+    "subgenre",
     "content_format",
     "literary_form",
     "mood",

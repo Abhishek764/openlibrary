@@ -38,7 +38,7 @@ def test_parse_slugs(name, slugs_input, expected):
 
 @pytest.mark.parametrize(
     "tag_type",
-    ["genre", "content_format", "literary_form", "mood"],
+    ["genre", "subgenre", "content_format", "literary_form", "mood"],
 )
 def test_new_subject_sub_types_in_subject_sub_types(tag_type):
     assert tag_type in SUBJECT_SUB_TYPES
@@ -46,7 +46,7 @@ def test_new_subject_sub_types_in_subject_sub_types(tag_type):
 
 @pytest.mark.parametrize(
     "tag_type",
-    ["genre", "content_format", "literary_form", "mood"],
+    ["genre", "subgenre", "content_format", "literary_form", "mood"],
 )
 def test_new_subject_sub_types_in_tag_types(tag_type):
     assert tag_type in TAG_TYPES
