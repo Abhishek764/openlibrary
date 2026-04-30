@@ -59,11 +59,20 @@ class subjects(delegate.page):
         return key
 
     def decorate_with_tags(self, subject) -> None:
-        if tag_keys := Tag.find(subject.name):
+        name = subject.name  # e.g. "genre:thriller" or "thriller"
+        # Split prefixed subjects: "genre:thriller" → tag_type="genre", slug="thriller"
+        if ":" in name:
+            tag_type, slug_raw = name.split(":", 1)
+            slug = Tag.normalize(slug_raw)
+        else:
+            tag_type = subject.subject_type
+            slug = Tag.normalize(name)
+
+        if tag_keys := Tag.find(slug):
             tags = web.ctx.site.get_many(tag_keys)
             subject.disambiguations = tags
 
-            if filtered_tags := [tag for tag in tags if tag.tag_type == subject.subject_type]:
+            if filtered_tags := [tag for tag in tags if tag.tag_type == tag_type]:
                 subject.tag = filtered_tags[0]
                 # Remove matching subject tag from disambiguated tags:
                 subject.disambiguations = list(set(tags) - {subject.tag})
