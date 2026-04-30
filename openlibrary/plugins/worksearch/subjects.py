@@ -59,7 +59,7 @@ class subjects(delegate.page):
         return key
 
     def decorate_with_tags(self, subject) -> None:
-        name = subject.name  # e.g. "genre:thriller" or "thriller"
+        name = subject.name
         # Split prefixed subjects: "genre:thriller" → tag_type="genre", slug="thriller"
         if ":" in name:
             tag_type, slug_raw = name.split(":", 1)

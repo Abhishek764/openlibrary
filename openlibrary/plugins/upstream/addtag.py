@@ -23,7 +23,16 @@ def get_subject_tag_types():
     return SUBJECT_SUB_TYPES
 
 
-SUBJECT_SUB_TYPES = ["subject", "person", "place", "time", "genre", "content_format", "literary_form", "mood"]
+SUBJECT_SUB_TYPES = [
+    "subject",
+    "person",
+    "place",
+    "time",
+    "genre",
+    "content_format",
+    "literary_form",
+    "mood",
+]
 TAG_TYPES = SUBJECT_SUB_TYPES + ["collection"]
 
 
