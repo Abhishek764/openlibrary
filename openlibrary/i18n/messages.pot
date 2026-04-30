@@ -8730,6 +8730,10 @@ msgid "Tag Body"
 msgstr ""
 
 #: type/tag/view.html
+msgid "URL Slugs"
+msgstr ""
+
+#: type/tag/view.html
 #, python-format
 msgid "View subject page for %(name)s."
 msgstr ""
