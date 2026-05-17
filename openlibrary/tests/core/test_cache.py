@@ -124,6 +124,24 @@ class Test_memoize:
         self.set("square-42", 43)
         assert square(42) == 43
 
+    def test_memory_cache_expires(self, monkeytime):
+        cache.memory_cache.set("short-lived", "value", expires=10)
+
+        assert cache.memory_cache.get("short-lived") == "value"
+
+        time.sleep(10)
+
+        assert cache.memory_cache.get("short-lived") is None
+
+    def test_memory_cache_add_replaces_expired_value(self, monkeytime):
+        assert cache.memory_cache.add("short-lived", "old", expires=10)
+        assert not cache.memory_cache.add("short-lived", "new")
+
+        time.sleep(10)
+
+        assert cache.memory_cache.add("short-lived", "new")
+        assert cache.memory_cache.get("short-lived") == "new"
+
     def test_cache_with_tuple_keys(self):
         @cache.memoize(engine="memory", key=lambda x: (str(x), "square"))
         def square(x):

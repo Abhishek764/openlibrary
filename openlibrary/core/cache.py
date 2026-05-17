@@ -13,10 +13,10 @@ from typing import Any, Literal, ParamSpec, TypeVar, cast
 
 import memcache
 import web
-
 from infogami import config
 from infogami.infobase.client import Nothing
 from infogami.utils import stats
+
 from openlibrary.core.helpers import NothingEncoder
 from openlibrary.utils import olmemcache
 from openlibrary.utils.dateutil import MINUTE_SECS
@@ -25,7 +25,6 @@ __all__ = [
     "Cache",
     "MemcacheCache",
     "MemoryCache",
-    "RequestCache",
     "get_memcache",
     "memcache_memoize",
     "memoize",
@@ -271,21 +270,41 @@ class MemoryCache(Cache):
 
     def __init__(self):
         self.d = {}
+        self.expiry_times = {}
 
     def get(self, key):
+        if self._is_expired(key):
+            self.delete(key)
+            return None
         return self.d.get(key)
 
     def set(self, key, value, expires=0):
         self.d[key] = value
+        self._set_expiry(key, expires)
 
     def add(self, key, value, expires=0):
-        return self.d.setdefault(key, value) is value
+        if key in self.d and not self._is_expired(key):
+            return False
+        self.set(key, value, expires)
+        return True
 
     def delete(self, key):
+        self.expiry_times.pop(key, None)
         return self.d.pop(key, None) is not None
 
     def clear(self):
         self.d.clear()
+        self.expiry_times.clear()
+
+    def _set_expiry(self, key, expires):
+        if expires:
+            self.expiry_times[key] = time.time() + expires
+        else:
+            self.expiry_times.pop(key, None)
+
+    def _is_expired(self, key):
+        expiry_time = self.expiry_times.get(key)
+        return expiry_time is not None and expiry_time <= time.time()
 
 
 class MemcacheCache(Cache):
@@ -354,32 +373,8 @@ class MemcacheCache(Cache):
         return value
 
 
-class RequestCache(Cache):
-    """Request-Local cache.
-
-    The values are cached only in the context of the current request.
-    """
-
-    @property
-    def d(self):
-        return web.ctx.setdefault("request-local-cache", {})
-
-    def get(self, key):
-        return self.d.get(key)
-
-    def set(self, key, value, expires=0):
-        self.d[key] = value
-
-    def add(self, key, value, expires=0):
-        return self.d.setdefault(key, value) is value
-
-    def delete(self, key):
-        return self.d.pop(key, None) is not None
-
-
 memory_cache = MemoryCache()
 memcache_cache = MemcacheCache()
-request_cache = RequestCache()
 
 
 def get_memcache():
@@ -390,8 +385,6 @@ def _get_cache(engine):
     d = {
         "memory": memory_cache,
         "memcache": memcache_cache,
-        "memcache+memory": memcache_cache,
-        "request": request_cache,
     }
     return d.get(engine)
 
@@ -411,7 +404,6 @@ class memoize:
         Engine to store the results. Available options are:
             * memory: stores the result in memory.
             * memcache: stores the result in memcached.
-            * request: stores the result only in the context of the current request.
 
     * key:
         key to be used in the cache. If this is a string, arguments are append
@@ -453,7 +445,7 @@ class memoize:
 
     def __init__(
         self,
-        engine: Literal["memory", "memcache", "request"],
+        engine: Literal["memory", "memcache"],
         key: str | Callable[..., str | tuple],
         expires: int = 0,
         background: bool = False,
