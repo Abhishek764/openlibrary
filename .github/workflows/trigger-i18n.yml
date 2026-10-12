@@ -10,6 +10,7 @@ permissions: {}
 
 jobs:
   dispatch:
+    if: ${{ secrets.OL_BOT_PAT != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Notify openlibrary-i18n of pot change
